@@ -91,8 +91,9 @@ internal typealias VersionCallback = (_ major: UInt8, _ minor: UInt8) -> Void
             
             // Validate data length
             if data == nil || data!.count != 2 {
-                logger.w("Invalid value: 2 bytes expected")
-                report?(.readingVersionFailed, "Unsupported DFU Version: \(data != nil && data!.count > 0 ? "0x" + data!.hexString : "no value")")
+//                logger.w("Invalid value: 2 bytes expected")
+//                report?(.readingVersionFailed, "Unsupported DFU Version: \(data != nil && data!.count > 0 ? "0x" + data!.hexString : "no value")")
+                success?(0, 0)
                 return
             }
             
