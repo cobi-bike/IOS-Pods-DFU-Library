@@ -138,15 +138,10 @@ internal class SecureDFUExecutor : DFUExecutor, SecureDFUPeripheralDelegate {
     }
     
     func peripheralDidReceiveInitPacket() {
-<<<<<<< HEAD
-        logWith(.verbose, message: String(format: "Command object sent (CRC = %08X)", CRC32(data: firmware.initPacket!).crc))
-        peripheral.sendCalculateChecksumCommand()
-=======
         logWith(.application, message: String(format: "Command object sent (CRC = %08X)", CRC32(data: firmware.initPacket!).crc))
         
         // Init Packet sent. Let's check the CRC before executing it.
         peripheral.sendCalculateChecksumCommand() // -> peripheralDidSendChecksum(...) will be called
->>>>>>> 1ae4e592bb6aed439e444d389d022abfe83d878a
     }
     
     func peripheralDidSendChecksum(offset: UInt32, crc: UInt32) {
