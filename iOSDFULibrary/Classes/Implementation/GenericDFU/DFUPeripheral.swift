@@ -50,6 +50,7 @@ internal protocol BaseDFUPeripheralAPI : class, DFUController {
 internal class BaseDFUPeripheral<TD : BasePeripheralDelegate> : NSObject, BaseDFUPeripheralAPI, CBPeripheralDelegate, CBCentralManagerDelegate {
     /// Bluetooth Central Manager used to scan for the peripheral.
     internal let centralManager: CBCentralManager
+    internal let targetIdentifier: UUID
     /// The DFU Target peripheral.
     internal var peripheral: CBPeripheral?
     /// The peripheral delegate.
@@ -88,13 +89,12 @@ internal class BaseDFUPeripheral<TD : BasePeripheralDelegate> : NSObject, BaseDF
     
     init(_ initiator: DFUServiceInitiator) {
         self.centralManager = initiator.centralManager
+        self.targetIdentifier = initiator.targetIdentifier
         self.logger = LoggerHelper(initiator.logger)
         self.experimentalButtonlessServiceInSecureDfuEnabled = initiator.enableUnsafeExperimentalButtonlessServiceInSecureDfu
         self.uuidHelper = initiator.uuidHelper
 
         super.init()
-        // Set the initial peripheral. It may be changed later (flashing App fw after first flashing SD/BL)
-        self.peripheral = initiator.target
     }
     
     // MARK: - Base DFU Peripheral API
@@ -107,14 +107,20 @@ internal class BaseDFUPeripheral<TD : BasePeripheralDelegate> : NSObject, BaseDF
             // Central manager not ready. Wait for poweredOn state.
             return
         }
+        // Set the initial peripheral. It may be changed later (flashing App fw after first flashing SD/BL).
+        guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first else {
+            delegate?.error(.bluetoothDisabled, didOccurWithMessage: "Could not obtain peripheral instance")
+            return
+        }
+        self.peripheral = peripheral
         
-        if peripheral!.state != .connected {
+        if peripheral.state != .connected {
             connect()
         } else {
-            let name = peripheral!.name ?? "Unknown device"
+            let name = peripheral.name ?? "Unknown device"
             logger.i("Connected to \(name)")
             
-            let dfuService = findDfuService(in: peripheral!.services)
+            let dfuService = findDfuService(in: peripheral.services)
             if dfuService == nil {
                 // DFU service has not been found, but it doesn't matter it's not there.
                 // Perhaps the user's application didn't discover it. Let's discover DFU services.
