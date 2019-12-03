@@ -1,1 +1,2 @@
-github "weichsel/ZIPFoundation" == 0.9.9
+# github "weichsel/ZIPFoundation" == 0.9.9
+github "cobi-bike/ZIPFoundation" "0.9.9_fix_bundle_identifier"
